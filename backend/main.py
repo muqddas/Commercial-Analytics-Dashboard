@@ -7,6 +7,8 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from backend.engine.pipeline import get_connection
+from backend.engine.ai_brief import generate_commercial_briefing
+
 
 app = FastAPI(
     title="Nocturne Mobility Commercial Analytics API",
@@ -132,4 +134,24 @@ def get_booking_curve(departure_id: str):
                 WHERE departure_id = %s
                 ORDER BY days_to_departure DESC;
             """, (departure_id,))
-            return cur.fetchall()
+
+        
+        
+        
+        
+@app.get("/api/ai/daily-brief")
+def get_ai_daily_brief():
+    """Generates or retrieves the daily commercial morning executive briefing."""
+    return generate_commercial_briefing()
+
+@app.post("/api/alerts/dispatch-slack")
+def dispatch_slack_alert(channel: str = "#commercial-lead"):
+    """Simulates automated morning commercial brief dispatch to Slack or Email."""
+    brief = generate_commercial_briefing()
+    return {
+        "status": "dispatched",
+        "channel": channel,
+        "dispatched_at": datetime.now().isoformat(),
+        "headline": brief.get("headline"),
+        "summary": brief.get("executive_summary")
+    }
